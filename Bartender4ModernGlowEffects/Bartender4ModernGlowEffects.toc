@@ -7,3 +7,4 @@
 ## X-Category: Action Bars
 
 Bartender4ModernGlowEffects.lua
+# Bartender4ModernGlowEffects_Debug.lua -- Uncomment for debug builds
