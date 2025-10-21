@@ -16,9 +16,8 @@ addonTable.DebugPrint("Debug module loaded. Debug mode ENABLED by default.")
 -- Slash command to toggle debug mode
 SLASH_MGLOWDEBUG1 = "/mglowdebug"
 SlashCmdList["MGLOWDEBUG"] = function(msg)
-    local currentDebugMode = addonTable.GetDebugMode()
-    addonTable.SetDebugMode(not currentDebugMode)
-    local newDebugMode = addonTable.GetDebugMode() -- Get the updated state
-    print((newDebugMode and "|cff00ff00" or "|cffff0000") .. "[ModernGlow]|r Debug mode " ..
-              (newDebugMode and "ENABLED" or "DISABLED"))
+    local isEnabled = not addonTable.GetDebugMode()
+    addonTable.SetDebugMode(isEnabled)
+    print((isEnabled and "|cff00ff00" or "|cffff0000") .. "[ModernGlow]|r Debug mode " ..
+              (isEnabled and "ENABLED" or "DISABLED"))
 end
