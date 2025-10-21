@@ -12,6 +12,7 @@ local LibStub = LibStub
 local AddonName = "Bartender4ModernGlowEffects"
 local debugMode = false -- Set to true to enable debug messages
 local hasBeenSetup = false -- Guard to prevent multiple setups
+local glowStateCache = {} -- Tracks the glow state of buttons to prevent flickering
 
 -- Debug print function
 local function DebugPrint(...)
@@ -48,6 +49,21 @@ local addon = CreateFrame("Frame")
 addon:RegisterEvent("ADDON_LOADED")
 addon:RegisterEvent("PLAYER_LOGIN")
 
+-- Function to refresh all Bartender4 bars to fix state issues after loading screens
+local function RefreshAllBars()
+    if not _G.Bartender4 or not _G.Bartender4.BarRegistry then
+        return
+    end
+
+    DebugPrint("PLAYER_ENTERING_WORLD: Refreshing all Bartender4 bars...")
+    for _, bar in pairs(_G.Bartender4.BarRegistry) do
+        if bar and bar.Update then
+            bar:Update()
+        end
+    end
+    DebugPrint("Bar refresh complete.")
+end
+
 local function SetupGlowReplacement()
     if hasBeenSetup then
         return
@@ -65,27 +81,64 @@ local function SetupGlowReplacement()
         local OriginalShowOverlayGlow = LibButtonGlow.ShowOverlayGlow
         local OriginalHideOverlayGlow = LibButtonGlow.HideOverlayGlow
 
-        -- Replace functions
+        -- Replace functions with state-aware versions to prevent animation flickering
         LibButtonGlow.ShowOverlayGlow = function(frame)
-            DebugPrint("ShowOverlayGlow called on:", frame and frame:GetName() or "unknown")
-            if frame then
-                -- Make sure old glow is gone
-                if OriginalHideOverlayGlow then
-                    OriginalHideOverlayGlow(frame)
-                end
-                _G.ActionButton_ShowOverlayGlow(frame)
+            if not frame then
+                return
             end
+
+            -- If we already think it's glowing, do nothing to prevent re-triggering the animation.
+            if glowStateCache[frame] then
+                DebugPrint("ShowOverlayGlow ignored (already glowing):", frame:GetName())
+                return
+            end
+
+            DebugPrint("ShowOverlayGlow called on:", frame:GetName())
+
+            -- Mark as glowing *before* showing the effect
+            glowStateCache[frame] = true
+
+            -- Make sure old glow is gone (belt-and-suspenders)
+            if OriginalHideOverlayGlow then
+                OriginalHideOverlayGlow(frame)
+            end
+            _G.ActionButton_ShowOverlayGlow(frame)
         end
 
         LibButtonGlow.HideOverlayGlow = function(frame)
-            DebugPrint("HideOverlayGlow called on:", frame and frame:GetName() or "unknown")
-            if frame then
+            if not frame then
+                return
+            end
+
+            -- Only hide if we think it's currently glowing
+            if glowStateCache[frame] then
+                DebugPrint("HideOverlayGlow called on:", frame:GetName())
+                glowStateCache[frame] = nil -- Mark as not glowing
                 ActionButton_HideOverlayGlow(frame)
             end
         end
 
         DebugPrint("Successfully replaced ShowOverlayGlow and HideOverlayGlow")
         hasBeenSetup = true -- Mark as set up
+
+        -- Now that we're set up, register the event to fix stuck glows on reload/zone change.
+        addon:RegisterEvent("PLAYER_ENTERING_WORLD")
+        addon:SetScript("OnEvent", nil) -- Clear the old OnEvent script
+        addon:SetScript("OnEvent", function(self, event, ...)
+            if event == "PLAYER_ENTERING_WORLD" then
+                -- On login/reload, clear our state cache as we can't be sure of the real state.
+                -- The RefreshAllBars function will then fix everything.
+                wipe(glowStateCache) -- Clear the cache
+                DebugPrint("Glow state cache cleared.")
+                -- Use a short timer to ensure everything is settled after loading in.
+                C_Timer_After(0.2, RefreshAllBars) -- Then refresh all bars
+            end
+        end)
+
+        -- The setup is complete, so we can unregister the initial events.
+        addon:UnregisterEvent("ADDON_LOADED")
+        addon:UnregisterEvent("PLAYER_LOGIN")
+        addon:SetScript("OnEvent", nil) -- Clear the initial handler completely
     else
         print("|cffff0000[ModernGlow]|r Could not find LibButtonGlow!")
     end
@@ -119,23 +172,25 @@ local function SetupGlowReplacement()
     end
 end
 
-addon:SetScript("OnEvent", function(self, event, loadedAddon)
-    if event == "ADDON_LOADED" then
-        if loadedAddon == "Bartender4" then
-            DebugPrint("Bartender4 loaded, attempting setup...")
-            -- Wait a bit for libraries to initialize
-            C_Timer_After(0.5, SetupGlowReplacement)
-        elseif loadedAddon == AddonName then
-            DebugPrint("Our addon loaded!")
-        end
+-- We need a more robust OnEvent handler now.
+local initialOnEvent = function(self, event, arg1)
+    if event == "ADDON_LOADED" and arg1 == "Bartender4" then
+        DebugPrint("Bartender4 loaded, attempting setup...")
+        -- Wait a bit for libraries to initialize
+        C_Timer_After(0.5, SetupGlowReplacement)
     elseif event == "PLAYER_LOGIN" then
-        DebugPrint("PLAYER_LOGIN fired")
+        DebugPrint("PLAYER_LOGIN fired, checking for Bartender4...")
         -- Fallback setup if Bartender4 already loaded
-        if _G.Bartender4 then -- Use _G.Bartender4 for explicit global access
+        if _G.Bartender4 then
             C_Timer_After(1, SetupGlowReplacement)
         end
     end
-end)
+
+    if hasBeenSetup then
+        self:SetScript("OnEvent", nil)
+    end
+end
+addon:SetScript("OnEvent", initialOnEvent)
 
 -- Try immediate setup if Bartender4 is already loaded
 if _G.Bartender4 then -- Use _G.Bartender4 for explicit global access
