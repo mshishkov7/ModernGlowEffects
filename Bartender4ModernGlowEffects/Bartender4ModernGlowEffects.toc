@@ -2,7 +2,7 @@
 ## Title: Bartender4 Modern Glow Effects
 ## Notes: Replaces Bartender4's glow effects with retail-style overlay glow
 ## Author: Your Name
-## Version: 1.0.0
+## Version: 1.0.1
 ## RequiredDeps: Bartender4
 ## X-Category: Action Bars
 
