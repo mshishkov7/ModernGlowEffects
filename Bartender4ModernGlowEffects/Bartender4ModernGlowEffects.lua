@@ -169,25 +169,19 @@ local function SetupGlowReplacement()
 end
 
 -- The main event handler for the addon.
+-- The main event handler for the addon.
 addon:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
-        -- On login/reload, our setup might have run already.
+        -- On login/reload, our setup should have run already.
         -- We always clear state and refresh bars to fix any stuck glows from loading screens.
         wipe(glowStateCache)
         DebugPrint("Glow state cache cleared.")
         C_Timer_After(0.2, RefreshAllBars) -- Use a short timer to ensure UI is settled.
-
-        -- Run setup if it hasn't been done yet. This is the safest time to do it.
-        SetupGlowReplacement()
-
-        -- Once setup is done, we only need to listen for PLAYER_ENTERING_WORLD to refresh bars.
-        -- The ADDON_LOADED event is no longer needed.
-        self:UnregisterEvent("ADDON_LOADED")
-    elseif event == "ADDON_LOADED" and arg1 == "Bartender4" then
-        -- Bartender4 has loaded, attempt to set up the glow replacement.
-        -- This helps on initial login if our addon loads before Bartender4.
-        SetupGlowReplacement()
     end
 end)
+
+-- Attempt to set up the glow replacement immediately.
+-- Since Bartender4 is a dependency, it should be loaded.
+SetupGlowReplacement()
 
 DebugPrint("Addon file loaded completely")
