@@ -10,7 +10,7 @@ local LibStub = LibStub
 
 -- Addon setup
 local AddonName = "Bartender4ModernGlowEffects"
-local debugMode = false -- Set to true to enable debug messages
+local debugMode = true -- Set to true to enable debug messages
 local hasBeenSetup = false -- Guard to prevent multiple setups
 local glowStateCache = {} -- Tracks the glow state of buttons to prevent flickering
 
@@ -81,42 +81,35 @@ local function SetupGlowReplacement()
         local OriginalShowOverlayGlow = LibButtonGlow.ShowOverlayGlow
         local OriginalHideOverlayGlow = LibButtonGlow.HideOverlayGlow
 
-        -- Replace functions with state-aware versions to prevent animation flickering
+        -- Wrapper to modify the glow after it's shown
         LibButtonGlow.ShowOverlayGlow = function(frame)
             if not frame then
                 return
             end
 
-            -- If we already think it's glowing, do nothing to prevent re-triggering the animation.
-            if glowStateCache[frame] then
-                DebugPrint("ShowOverlayGlow ignored (already glowing):", frame:GetName())
-                return
+            -- Call the original function to create/show the overlay
+            if OriginalShowOverlayGlow then
+                OriginalShowOverlayGlow(frame)
             end
 
-            DebugPrint("ShowOverlayGlow called on:", frame:GetName())
-
-            -- Mark as glowing *before* showing the effect
-            glowStateCache[frame] = true
-
-            -- Make sure old glow is gone (belt-and-suspenders)
-            if OriginalHideOverlayGlow then
-                OriginalHideOverlayGlow(frame)
-            end
-            _G.ActionButton_ShowOverlayGlow(frame)
-        end
-
-        LibButtonGlow.HideOverlayGlow = function(frame)
-            if not frame then
-                return
-            end
-
-            -- Only hide if we think it's currently glowing
-            if glowStateCache[frame] then
-                DebugPrint("HideOverlayGlow called on:", frame:GetName())
-                glowStateCache[frame] = nil -- Mark as not glowing
-                ActionButton_HideOverlayGlow(frame)
+            -- Modify the overlay to look like modern retail (hide ants, adjust textures)
+            local overlay = frame.__LBGoverlay
+            if overlay then
+                if overlay.ants then
+                    overlay.ants:SetAlpha(0)
+                    overlay.ants:Hide()
+                end
+                
+                -- Ensure inner/outer glows are visible and correct
+                -- LibButtonGlow uses retail IconAlert textures by default, which is good.
+                -- We just ensure no interference from the "ants" style.
             end
         end
+
+        -- We don't need to wrap HideOverlayGlow anymore as the original works fine.
+        -- But we can keep an empty wrapper or just restore the original if we want.
+        -- For simplicity, let's just let the original handle hiding.
+        LibButtonGlow.HideOverlayGlow = OriginalHideOverlayGlow
 
         DebugPrint("Successfully replaced ShowOverlayGlow and HideOverlayGlow")
         hasBeenSetup = true -- Mark as set up
