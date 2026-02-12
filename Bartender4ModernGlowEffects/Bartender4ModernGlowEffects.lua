@@ -92,24 +92,54 @@ local function SetupGlowReplacement()
                 OriginalShowOverlayGlow(frame)
             end
 
-            -- Modify the overlay to look like modern retail (hide ants, adjust textures)
+            -- Modify the overlay to look like modern retail (hide ants, adjust textures, add pulse)
             local overlay = frame.__LBGoverlay
             if overlay then
                 if overlay.ants then
                     overlay.ants:SetAlpha(0)
                     overlay.ants:Hide()
                 end
-                
-                -- Ensure inner/outer glows are visible and correct
-                -- LibButtonGlow uses retail IconAlert textures by default, which is good.
-                -- We just ensure no interference from the "ants" style.
+
+                -- Create Pulse animation if it doesn't exist
+                if not overlay.animPulse then
+                    overlay.animPulse = overlay:CreateAnimationGroup()
+                    overlay.animPulse:SetLooping("BOUNCE")
+
+                    local alpha = overlay.animPulse:CreateAnimation("Alpha")
+                    alpha:SetTarget(overlay.outerGlow)
+                    alpha:SetDuration(0.5)
+                    alpha:SetFromAlpha(1)
+                    alpha:SetToAlpha(0.5)
+                    alpha:SetSmoothing("IN_OUT")
+
+                    local scale = overlay.animPulse:CreateAnimation("Scale")
+                    scale:SetTarget(overlay.outerGlow)
+                    scale:SetDuration(0.5)
+                    scale:SetScale(1.05, 1.05)
+                    scale:SetSmoothing("IN_OUT")
+                end
+
+                -- Play Pulse if not already playing
+                if not overlay.animPulse:IsPlaying() then
+                    overlay.animPulse:Play()
+                end
             end
         end
 
-        -- We don't need to wrap HideOverlayGlow anymore as the original works fine.
-        -- But we can keep an empty wrapper or just restore the original if we want.
-        -- For simplicity, let's just let the original handle hiding.
-        LibButtonGlow.HideOverlayGlow = OriginalHideOverlayGlow
+        LibButtonGlow.HideOverlayGlow = function(frame)
+            if not frame then
+                return
+            end
+
+            local overlay = frame.__LBGoverlay
+            if overlay and overlay.animPulse then
+                overlay.animPulse:Stop()
+            end
+
+            if OriginalHideOverlayGlow then
+                OriginalHideOverlayGlow(frame)
+            end
+        end
 
         DebugPrint("Successfully replaced ShowOverlayGlow and HideOverlayGlow")
         hasBeenSetup = true -- Mark as set up
