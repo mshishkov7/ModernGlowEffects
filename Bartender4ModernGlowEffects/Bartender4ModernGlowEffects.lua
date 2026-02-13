@@ -75,7 +75,7 @@ local function SetupGlowReplacement()
 		if glowStateCache[frame] then return end -- Already glowing
 		
 		glowStateCache[frame] = true
-		LCG.PixelGlow_Start(frame, {0.4, 0.8, 1, 0.9}, 8, 0.25, nil, 2)
+		LCG.ProcGlow_Start(frame)
 		DebugPrint("ShowGlow", frame:GetName())
 	end
 	
@@ -85,7 +85,7 @@ local function SetupGlowReplacement()
 		if not glowStateCache[frame] then return end -- Not glowing
 		
 		glowStateCache[frame] = nil
-		LCG.PixelGlow_Stop(frame)
+		LCG.ProcGlow_Stop(frame)
 		DebugPrint("HideGlow", frame:GetName())
 	end
 	
