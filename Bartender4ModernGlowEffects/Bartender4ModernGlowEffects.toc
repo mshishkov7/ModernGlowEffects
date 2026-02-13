@@ -1,10 +1,11 @@
-## Interface: 110207,120000,120001,11508,50503,20505
+## Interface: 120000
+## Version: 2.0.0
 ## Title: Bartender4 Modern Glow Effects
-## Notes: Replaces Bartender4's glow effects with retail-style overlay glow
+## Notes: Replaces Bartender4 button glow with LibCustomGlow visual effects
 ## Author: verylosh
-## Version: 2.01.1
-## RequiredDeps: Bartender4
-## X-Category: Action Bars
+## Dependencies: Bartender4
+## OptionalDeps: LibCustomGlow-1.0, Masque
 
+libs/LibStub/LibStub.lua
+libs/LibCustomGlow-1.0/LibCustomGlow-1.0.xml
 Bartender4ModernGlowEffects.lua
-# Bartender4ModernGlowEffects_Debug.lua -- Uncomment for debug builds
