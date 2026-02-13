@@ -1,0 +1,7 @@
+1x Bartender4ModernGlowEffects/Bartender4ModernGlowEffects.lua:1 ...rfaceBartender4ModernGlowEffects/Bartender4ModernGlowEffects.lua:34: '(' expected near '['
+
+
+1x ...rfaceBartender4ModernGlowEffects/Bartender4ModernGlowEffects.lua:34: '(' expected near '['
+
+
+Locals:
