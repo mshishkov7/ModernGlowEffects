@@ -22,6 +22,8 @@ if select(4, GetBuildInfo()) < MIN_BUILD then
 	return
 end
 
+print(AddonName .. ": File loaded OK")
+
 local addonFrame = CreateFrame("Frame")
 local debugMode = false
 local hasBeenSetup = false
@@ -85,6 +87,19 @@ local function SetupGlowReplacement()
 	end
 	
 	hasBeenSetup = true
+	
+	-- Kill OnUpdate on any already-created LBG overlay frames to stop the secret value crash
+	if LBG.numOverlays and LBG.numOverlays > 0 then
+		for i = 1, LBG.numOverlays do
+			local overlay = _G["ButtonGlowOverlay" .. i]
+			if overlay then
+				overlay:SetScript("OnUpdate", nil)
+				overlay:Hide()
+				DebugPrint("Patched overlay frame:", "ButtonGlowOverlay" .. i)
+			end
+		end
+	end
+	
 	DebugPrint("Setup complete.")
 end
 
