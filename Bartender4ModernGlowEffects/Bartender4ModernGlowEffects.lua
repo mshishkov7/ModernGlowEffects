@@ -100,29 +100,54 @@ local function SetupGlowReplacement()
                     overlay.ants:Hide()
                 end
 
-                -- Create Pulse animation if it doesn't exist
-                if not overlay.animPulse then
+                    -- 1. Pulse Animation (Looping)
                     overlay.animPulse = overlay:CreateAnimationGroup()
                     overlay.animPulse:SetLooping("BOUNCE")
 
-                    local alpha = overlay.animPulse:CreateAnimation("Alpha")
-                    alpha:SetTarget(overlay.outerGlow)
-                    alpha:SetDuration(0.5)
-                    alpha:SetFromAlpha(1)
-                    alpha:SetToAlpha(0.5)
-                    alpha:SetSmoothing("IN_OUT")
+                    local pulseAlpha = overlay.animPulse:CreateAnimation("Alpha")
+                    pulseAlpha:SetTarget(overlay.outerGlow)
+                    pulseAlpha:SetDuration(0.5)
+                    pulseAlpha:SetFromAlpha(1)
+                    pulseAlpha:SetToAlpha(0.5)
+                    pulseAlpha:SetSmoothing("IN_OUT")
 
-                    local scale = overlay.animPulse:CreateAnimation("Scale")
-                    scale:SetTarget(overlay.outerGlow)
-                    scale:SetDuration(0.5)
-                    scale:SetScale(1.05, 1.05)
-                    scale:SetSmoothing("IN_OUT")
+                    local pulseScale = overlay.animPulse:CreateAnimation("Scale")
+                    pulseScale:SetTarget(overlay.outerGlow)
+                    pulseScale:SetDuration(0.5)
+                    pulseScale:SetScale(1.05, 1.05)
+                    pulseScale:SetSmoothing("IN_OUT")
+
+                    -- 2. Proc-in Animation (One-shot slam effect)
+                    overlay.animProc = overlay:CreateAnimationGroup()
+                    
+                    local procScale = overlay.animProc:CreateAnimation("Scale")
+                    procScale:SetTarget(overlay.outerGlow)
+                    procScale:SetDuration(0.2)
+                    procScale:SetScale(1.5, 1.5)
+                    procScale:SetOrder(1)
+                    
+                    local procScaleIn = overlay.animProc:CreateAnimation("Scale")
+                    procScaleIn:SetTarget(overlay.outerGlow)
+                    procScaleIn:SetDuration(0.2)
+                    procScaleIn:SetScale(0.66, 0.66) -- Scale back to 1.0 (1.5 * 0.66 ~= 1)
+                    procScaleIn:SetOrder(2)
+                    procScaleIn:SetSmoothing("OUT")
+
+                    overlay.animProc:SetScript("OnFinished", function(self)
+                        if overlay.animPulse then
+                            overlay.animPulse:Play()
+                        end
+                    end)
                 end
 
-                -- Play Pulse if not already playing
-                if not overlay.animPulse:IsPlaying() then
-                    overlay.animPulse:Play()
+                -- Play Proc animation on show, then Pulse loops
+                if overlay.animProc:IsPlaying() then
+                    overlay.animProc:Stop()
                 end
+                if overlay.animPulse:IsPlaying() then
+                    overlay.animPulse:Stop()
+                end
+                overlay.animProc:Play()
             end
         end
 
@@ -132,8 +157,13 @@ local function SetupGlowReplacement()
             end
 
             local overlay = frame.__LBGoverlay
-            if overlay and overlay.animPulse then
-                overlay.animPulse:Stop()
+            if overlay then
+                if overlay.animPulse then
+                    overlay.animPulse:Stop()
+                end
+                if overlay.animProc then
+                    overlay.animProc:Stop()
+                end
             end
 
             if OriginalHideOverlayGlow then
