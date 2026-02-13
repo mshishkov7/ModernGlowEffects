@@ -1,7 +1,37 @@
-1x Bartender4ModernGlowEffects/Bartender4ModernGlowEffects.lua:1 ...rfaceBartender4ModernGlowEffects/Bartender4ModernGlowEffects.lua:34: '(' expected near '['
-
-
-1x ...rfaceBartender4ModernGlowEffects/Bartender4ModernGlowEffects.lua:34: '(' expected near '['
-
+67x ...Effects/libs/LibCustomGlow-1.0-19/LibCustomGlow-1.0.lua:544: attempt to compare a secret number value (tainted by 'Bartender4ModernGlowEffects')
+[Bartender4ModernGlowEffects/libs/LibCustomGlow-1.0-19/LibCustomGlow-1.0.lua]:544: in function <...Effects/libs/LibCustomGlow-1.0/LibCustomGlow-1.0.lua:541>
 
 Locals:
+self = Frame {
+ spark = Texture {
+ }
+ outerGlowOver = Texture {
+ }
+ color = false
+ innerGlow = Texture {
+ }
+ throttle = 0.010000
+ outerGlow = Texture {
+ }
+ animOut = AnimationGroup {
+ }
+ animIn = AnimationGroup {
+ }
+ innerGlowOver = Texture {
+ }
+ ants = Texture {
+ }
+}
+elapsed = 0.015000
+cooldown = BT4Button3Cooldown {
+}
+(*temporary) = <no value>
+(*temporary) = BT4Button3Cooldown {
+}
+(*temporary) = <no value>
+(*temporary) = 48
+(*temporary) = 48
+(*temporary) = 22
+(*temporary) = 0.015000
+(*temporary) = 0.010000
+(*temporary) = "attempt to compare a secret number value (tainted by 'Bartender4ModernGlowEffects')"
