@@ -1,5 +1,5 @@
 ## Interface: 120000
-## Version: 2.0.2
+## Version: 2.0.3
 ## Title: Bartender4 Modern Glow Effects
 ## Notes: Replaces Bartender4 button glow with LibCustomGlow visual effects
 ## Author: verylosh
