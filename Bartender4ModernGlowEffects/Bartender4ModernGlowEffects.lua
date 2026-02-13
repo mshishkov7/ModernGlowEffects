@@ -31,11 +31,14 @@ local glowStateCache = {}
 
 -- Debug Interface
 _G[AddonName] = {}
-function _G[AddonName].SetDebugMode(enable)
+local API = _G[AddonName]
+
+function API.SetDebugMode(enable)
 	debugMode = enable
 	print(AddonName .. ": Debug mode " .. (enable and "enabled" or "disabled"))
 end
-function _G[AddonName].GetDebugMode()
+
+function API.GetDebugMode()
 	return debugMode
 end
 
