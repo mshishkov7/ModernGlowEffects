@@ -117,6 +117,12 @@ addonFrame:SetScript("OnEvent", function(self, event, arg1)
 		SetupGlowReplacement()
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		if hasBeenSetup then
+			local LCG = LibStub("LibCustomGlow-1.0", true)
+			if LCG then
+				for frame in pairs(glowStateCache) do
+					LCG.ProcGlow_Stop(frame)
+				end
+			end
 			wipe(glowStateCache)
 			C_Timer.After(0.3, RefreshAllBars)
 		end
